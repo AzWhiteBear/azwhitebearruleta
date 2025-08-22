@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ruleta LoL – Rol / Campeón / Hechizos / Runas</title>
-  <meta name="description" content="Ruleta aleatoria para League of Legends: elige rol, campeón, hechizos y runas (Data Dragon en vivo)."/>
+  <meta name="description" content="Ruleta aleatoria para League of Legends: elige rol, campeón, hechizos y runas (Data Dragon en vivo, español)."/>
   <style>
     :root{
       --bg:#0b1220;--bg2:#0e1526;--panel:#121a2e;--border:#1c2741;--text:#e6eefc;--muted:#a7b4d6;--acc:#4ade80;--acc2:#f59e0b;--danger:#ef4444
@@ -46,15 +46,26 @@
     .footer{margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:14px}
     .kbd{border:1px solid var(--border);border-bottom-color:#000;background:#0b1220;border-radius:8px;padding:2px 6px}
     .tiny{font-size:12px;color:var(--muted)}
-    .transparent body{background:transparent}
+
+    /* Íconos */
+    .icons{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .ico{width:42px;height:42px;border-radius:10px;background:#0b1220;border:1px solid var(--border);object-fit:cover}
+    .ico.rune{border-radius:50%}
+    .name{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+    /* Logo superpuesto */
+    #logoOverlay{position:fixed;top:20px;right:20px;width:90px;height:auto;z-index:9999;pointer-events:none}
   </style>
 </head>
 <body>
+  <!-- Logo (subí logo.png a la raíz del repo) -->
+  <img src="logo.png" id="logoOverlay" alt="Logo" />
+
   <div class="wrap">
     <header class="title">
       <div>
         <h1>🎡 Ruleta LoL</h1>
-        <div class="muted">Rol • Campeón • Hechizos • Runas — datos en vivo de Data Dragon</div>
+        <div class="muted">Rol • Campeón • Hechizos • Runas — datos en vivo (español) de Riot Data Dragon</div>
       </div>
       <div class="row">
         <button class="btn btn-ghost" id="copyBtn" title="Copiar resultado">Copiar</button>
@@ -72,27 +83,27 @@
         <div class="grid2">
           <label class="chk"><input type="checkbox" data-role value="Top" checked> Top</label>
           <label class="chk"><input type="checkbox" data-role value="Jungla" checked> Jungla</label>
-          <label class="chk"><input type="checkbox" data-role value="Mid" checked> Mid</label>
-          <label class="chk"><input type="checkbox" data-role value="ADC" checked> ADC</label>
-          <label class="chk"><input type="checkbox" data-role value="Support" checked> Support</label>
+          <label class="chk"><input type="checkbox" data-role value="Medio" checked> Medio</label>
+          <label class="chk"><input type="checkbox" data-role value="Tirador" checked> Tirador</label>
+          <label class="chk"><input type="checkbox" data-role value="Soporte" checked> Soporte</label>
         </div>
 
         <div class="row" style="margin-top:12px">
-          <label class="chk"><input id="forceSmite" type="checkbox" checked> Smite obligatorio en Jungla</label>
-          <label class="chk"><input id="includeFlash" type="checkbox" checked> Incluir Flash</label>
+          <label class="chk"><input id="forceSmite" type="checkbox" checked> Aplastar obligatorio en Jungla</label>
+          <label class="chk"><input id="includeFlash" type="checkbox" checked> Incluir Destello</label>
         </div>
 
         <div class="row" style="margin-top:12px">
-          <button class="btn btn-primary" id="startBtn">START</button>
-          <button class="btn btn-sec" id="stopBtn" disabled>STOP</button>
-          <button class="btn btn-ghost" id="resetBtn">Reset</button>
+          <button class="btn btn-primary" id="startBtn">INICIAR</button>
+          <button class="btn btn-sec" id="stopBtn" disabled>DETENER</button>
+          <button class="btn btn-ghost" id="resetBtn">Reiniciar</button>
         </div>
       </section>
 
       <section class="card">
         <div class="title">
           <h2>Resultado</h2>
-          <span class="tiny">Consejo: usá <span class="kbd">Ctrl</span>+<span class="kbd">C</span> tras “Copiar”.</span>
+          <span class="tiny">Tip: después de “Copiar”, pegalo en el chat del stream.</span>
         </div>
 
         <div class="result">
@@ -102,15 +113,19 @@
           </div>
           <div class="resbox">
             <div class="lab">Campeón</div>
-            <div class="big" id="resChamp">—</div>
+            <div class="name"><img id="champImg" class="ico" alt=""/> <span class="big" id="resChamp">—</span></div>
           </div>
           <div class="resbox">
-            <div class="lab">Hechizos (Summoners)</div>
-            <div class="big" id="resSums">—</div>
+            <div class="lab">Hechizos de invocador</div>
+            <div class="name"><img id="sum1Img" class="ico" alt=""/> <img id="sum2Img" class="ico" alt=""/> <span class="big" id="resSums">—</span></div>
           </div>
           <div class="resbox">
             <div class="lab">Runas</div>
-            <div id="resRunes" class="big" style="line-height:1.2">—</div>
+            <div class="name">
+              <img id="runeKeyImg" class="ico rune" alt=""/>
+              <span id="resRunes" class="big" style="line-height:1.2">—</span>
+            </div>
+            <div class="icons" id="minorIcons"></div>
             <div class="tiny" id="resShards"> </div>
           </div>
         </div>
@@ -119,7 +134,7 @@
 
     <div class="footer">
       <div>Hecho para streaming. Guarda tus opciones en el navegador automáticamente.</div>
-      <div class="tiny">Fuente de datos: Riot Data Dragon (campeones y runas) • Compatible con OBS (Browser Source)</div>
+      <div class="tiny">Fuente de datos: Riot Data Dragon (campeones, runas y hechizos) • Compatible con OBS (Browser Source)</div>
     </div>
   </div>
 
@@ -127,33 +142,37 @@
   // === Utilidades ===
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
   const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
   // === Estado ===
-  let VERS = null;              // string de versión de DDragon
-  let CHAMPIONS = [];           // lista de nombres de campeones
+  let VERS = null;              // versión de DDragon
+  let CHAMPIONS = [];           // [{id,name,image}]
   let RUNEPATHS = [];           // paths completos (con slots)
+  let SUMMONERS = {};           // por key: { id, key, name, iconUrl }
   let spinning = false;
   let spinTimer = null;
 
-  // === Shards (no vienen en runesReforged.json) ===
+  // === Fragmentos (no vienen en runesReforged.json) ===
   const SHARDS = {
     offense: ["Fuerza adaptable", "Velocidad de ataque", "Aceleración de habilidad"],
     flex:    ["Fuerza adaptable", "Armadura", "Resistencia mágica"],
     defense: ["Vida", "Armadura", "Resistencia mágica"],
   };
 
-  // === Hechizos disponibles para Grieta (simplificado) ===
-  const SUMS_BASE = ["Flash","Ignite","Teleport","Exhaust","Ghost","Heal","Barrier","Cleanse","Smite"];
+  // Claves de hechizos que permitimos en Grieta
+  const SUM_KEYS = [
+    'SummonerFlash',   // Destello
+    'SummonerDot',     // Prender
+    'SummonerTeleport',// Teleportar
+    'SummonerExhaust', // Extenuar
+    'SummonerHaste',   // Fantasmal
+    'SummonerHeal',    // Curar
+    'SummonerBarrier', // Barrera
+    'SummonerBoost',   // Purificar
+    'SummonerSmite'    // Aplastar
+  ];
 
-  // Persistencia sencilla
-  const store = {
-    get(key, def){ try{ return JSON.parse(localStorage.getItem(key)) ?? def }catch{ return def } },
-    set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)) }catch{} }
-  };
-
-  // === Carga de Data Dragon (última versión siempre) ===
+  // === Carga de Data Dragon (última versión y ES) ===
   async function loadData() {
     // 1) versión
     const verRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
@@ -161,40 +180,57 @@
     VERS = versions[0];
     $('#verLabel').textContent = `v${VERS}`;
 
-    // 2) campeones
-    const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/en_US/champion.json`);
+    // 2) campeones (ES)
+    const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/es_ES/champion.json`);
     const champJson = await champRes.json();
-    CHAMPIONS = Object.values(champJson.data).map(c => c.name).sort((a,b)=>a.localeCompare(b));
+    CHAMPIONS = Object.values(champJson.data).map(c => ({ id: c.id, name: c.name, image: c.image.full }))
+      .sort((a,b)=>a.name.localeCompare(b.name));
 
-    // 3) runas
-    const runeRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/en_US/runesReforged.json`);
+    // 3) runas (ES)
+    const runeRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/es_ES/runesReforged.json`);
     RUNEPATHS = await runeRes.json();
+
+    // 4) hechizos (ES)
+    const sumRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/es_ES/summoner.json`);
+    const sumJson = await sumRes.json();
+    SUMMONERS = Object.values(sumJson.data)
+      .filter(s => SUM_KEYS.includes(s.id))
+      .reduce((acc, s) => {
+        const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${VERS}/img/spell/${s.image.full}`;
+        acc[s.id] = { id: s.id, key: s.key, name: s.name, iconUrl };
+        return acc;
+      }, {});
   }
 
   // === Selección de runas válida ===
   function rollRunes() {
-    // Elegir path primario y secundario distintos
     const primary = rand(RUNEPATHS);
-    let secondary = rand(RUNEPATHS.filter(p => p.id !== primary.id));
+    const secondary = rand(RUNEPATHS.filter(p => p.id !== primary.id));
 
-    // Keystone (slot 0 del primario)
     const keystone = rand(primary.slots[0].runes);
-
-    // 3 menores (una por cada slot 1..3)
     const minorsPrimary = [1,2,3].map(i => rand(primary.slots[i].runes));
 
-    // 2 menores del secundario (deben ser de slots distintos entre 1..3)
     const secSlots = [1,2,3];
     const pick1 = rand(secSlots);
     let pick2 = rand(secSlots.filter(s => s !== pick1));
     const minorsSecondary = [ rand(secondary.slots[pick1].runes), rand(secondary.slots[pick2].runes) ];
 
-    // Shards (3)
     const shards = [ rand(SHARDS.offense), rand(SHARDS.flex), rand(SHARDS.defense) ];
 
+    const iconBase = `https://ddragon.leagueoflegends.com/cdn/img/`;
+
     return {
-      primary: { name: primary.name, keystone: keystone.name, minors: minorsPrimary.map(r=>r.name) },
-      secondary: { name: secondary.name, minors: minorsSecondary.map(r=>r.name) },
+      primary: {
+        name: primary.name,
+        keystone: { name: keystone.name, icon: iconBase + keystone.icon },
+        minors: minorsPrimary.map(r => ({ name: r.name, icon: iconBase + r.icon })),
+        icon: iconBase + primary.icon
+      },
+      secondary: {
+        name: secondary.name,
+        minors: minorsSecondary.map(r => ({ name: r.name, icon: iconBase + r.icon })),
+        icon: iconBase + secondary.icon
+      },
       shards
     };
   }
@@ -202,29 +238,38 @@
   // === Hechizos ===
   function rollSummoners(role, opts){
     const { forceSmite, includeFlash } = opts;
-    const pool = SUMS_BASE.slice();
 
+    // convertir a lista {id, name, iconUrl}
+    const pool = SUM_KEYS.map(k => SUMMONERS[k]).filter(Boolean);
+    const nameOf = id => (SUMMONERS[id] ? SUMMONERS[id].name : id);
+
+    const isSupportOrADC = (role === 'Soporte' || role === 'Tirador');
+
+    // jungla con Aplastar obligatorio
     if(role === 'Jungla' && forceSmite){
-      const second = includeFlash ? 'Flash' : rand(pool.filter(s => s !== 'Smite'));
-      return shufflePair('Smite', second);
+      const second = includeFlash ? 'SummonerFlash' : rand(pool.filter(s => s.id !== 'SummonerSmite')).id;
+      return shufflePair('SummonerSmite', second).map(id => ({ id, name: nameOf(id) }));
     }
 
     // fuera de jungla
-    const filtered = pool.filter(s => s !== 'Smite');
+    let filtered = pool.filter(s => s.id !== 'SummonerSmite').map(s => s.id);
+
     if(includeFlash){
-      const other = rand(filtered.filter(s => s !== 'Flash'));
-      // evitar combinaciones memas Heal+Barrier
-      if((other === 'Heal') && Math.random() < 0.5) return ['Flash','Ignite'];
-      return shufflePair('Flash', other);
+      const other = rand(filtered.filter(id => id !== 'SummonerFlash'));
+      // Evitar Teleportar en Soporte/Tirador a veces
+      if(isSupportOrADC && other === 'SummonerTeleport'){
+        return [ 'SummonerExhaust', 'SummonerIgnite' ].map(id => ({ id, name: nameOf(id) }));
+      }
+      return shufflePair('SummonerFlash', other).map(id => ({ id, name: nameOf(id) }));
     }
-    // sin Flash forzado
+
+    // sin Destello forzado
     let a = rand(filtered), b = rand(filtered);
     let guard=0; while(b===a && guard++<20) b = rand(filtered);
-    // evitar Teleport en Support/ADC ocasionalmente
-    if((role==='Support'||role==='ADC') && (a==='Teleport'||b==='Teleport')){
-      return ['Exhaust','Ignite'];
+    if(isSupportOrADC && (a==='SummonerTeleport'||b==='SummonerTeleport')){
+      return [ 'SummonerExhaust', 'SummonerIgnite' ].map(id => ({ id, name: nameOf(id) }));
     }
-    return shufflePair(a,b);
+    return shufflePair(a,b).map(id => ({ id, name: nameOf(id) }));
   }
 
   function shufflePair(a,b){ return Math.random()<0.5 ? [a,b] : [b,a]; }
@@ -246,48 +291,61 @@
 
   function render(res, ghost=false){
     if(!res) return;
-    $('#resRole').textContent = res.role; if(ghost) $('#resRole').classList.add('spin'); else $('#resRole').classList.remove('spin');
-    $('#resChamp').textContent = res.champ; if(ghost) $('#resChamp').classList.add('spin'); else $('#resChamp').classList.remove('spin');
-    $('#resSums').textContent = res.sums.join(' + '); if(ghost) $('#resSums').classList.add('spin'); else $('#resSums').classList.remove('spin');
+    $('#resRole').textContent = res.role; toggleSpin('#resRole', ghost);
 
-    const p = res.runes.primary, s = res.runes.secondary;
+    // Campeón + icono
+    const champUrl = `https://ddragon.leagueoflegends.com/cdn/${VERS}/img/champion/${res.champ.image}`;
+    $('#champImg').src = champUrl; $('#champImg').alt = res.champ.name;
+    $('#resChamp').textContent = res.champ.name; toggleSpin('#resChamp', ghost);
+
+    // Summoners + iconos
+    const s1 = res.sums[0], s2 = res.sums[1];
+    $('#sum1Img').src = SUMMONERS[s1.id].iconUrl; $('#sum1Img').alt = s1.name;
+    $('#sum2Img').src = SUMMONERS[s2.id].iconUrl; $('#sum2Img').alt = s2.name;
+    $('#resSums').textContent = `${s1.name} + ${s2.name}`; toggleSpin('#resSums', ghost);
+
+    // Runas + iconos
+    $('#runeKeyImg').src = res.runes.primary.keystone.icon; $('#runeKeyImg').alt = res.runes.primary.keystone.name;
     $('#resRunes').innerHTML = `
-      <div class="mono">Primaria: <b>${escapeHtml(p.name)}</b> — Keystone: <b>${escapeHtml(p.keystone)}</b><br>
-      Menores: ${p.minors.map(escapeHtml).join(' • ')}<br>
-      Secundaria: <b>${escapeHtml(s.name)}</b> — ${s.minors.map(escapeHtml).join(' • ')}</div>`;
-    $('#resShards').textContent = `Fragmentos: ${res.runes.shards.join(' • ')}`;
+      <div class="mono">Primaria: <b>${esc(res.runes.primary.name)}</b> — Keystone: <b>${esc(res.runes.primary.keystone.name)}</b><br>
+      Menores: ${res.runes.primary.minors.map(r=>esc(r.name)).join(' • ')}<br>
+      Secundaria: <b>${esc(res.runes.secondary.name)}</b> — ${res.runes.secondary.minors.map(r=>esc(r.name)).join(' • ')}</div>`;
+    toggleSpin('#resRunes', ghost);
 
-    if(ghost){
-      $('#resRunes').classList.add('spin');
-    } else {
-      $('#resRunes').classList.remove('spin');
-    }
+    const minorsBox = $('#minorIcons'); minorsBox.innerHTML='';
+    res.runes.primary.minors.forEach(r=>{ const img=new Image(); img.className='ico rune'; img.src=r.icon; img.alt=r.name; minorsBox.appendChild(img); });
+    res.runes.secondary.minors.forEach(r=>{ const img=new Image(); img.className='ico rune'; img.src=r.icon; img.alt=r.name; minorsBox.appendChild(img); });
+
+    $('#resShards').textContent = `Fragmentos: ${res.runes.shards.join(' • ')}`;
   }
+
+  function toggleSpin(sel, on){ const el=$(sel); if(on) el.classList.add('spin'); else el.classList.remove('spin'); }
 
   function formatClipboard(res){
     const { role, champ, sums, runes } = res;
     return [
       '🎡 Ruleta LoL',
       `Rol: ${role}`,
-      `Campeón: ${champ}`,
-      `Hechizos: ${sums.join(' + ')}`,
-      `Runas: [Primaria ${runes.primary.name}] Keystone ${runes.primary.keystone} | Menores: ${runes.primary.minors.join(' / ')}`,
-      `       [Secundaria ${runes.secondary.name}] ${runes.secondary.minors.join(' / ')}`,
-      `Shards: ${runes.shards.join(' / ')}`,
-    ].join('\n');
+      `Campeón: ${champ.name}`,
+      `Hechizos: ${sums.map(s=>s.name).join(' + ')}`,
+      `Runas: [Primaria ${runes.primary.name}] Keystone ${runes.primary.keystone.name} | Menores: ${runes.primary.minors.map(r=>r.name).join(' / ')}`,
+      `       [Secundaria ${runes.secondary.name}] ${runes.secondary.minors.map(r=>r.name).join(' / ')}`,
+      `Fragmentos: ${runes.shards.join(' / ')}`,
+    ].join('
+');
   }
 
   // === Eventos UI ===
   $('#startBtn').addEventListener('click', async () => {
     if(spinning) return; spinning = true; $('#startBtn').disabled=true; $('#stopBtn').disabled=false;
     const startT = performance.now();
-    async function tick(){
+    function tick(){
       const g = spinOnce();
       render(g,true);
-      if(!spinning) return; // si ya frenó
-      if(performance.now()-startT < 1600){ spinTimer = setTimeout(tick, 80); } else { // auto-stop animación
+      if(!spinning) return;
+      if(performance.now()-startT < 1600){ spinTimer = setTimeout(tick, 80); } else {
         spinning=false; $('#startBtn').disabled=false; $('#stopBtn').disabled=true;
-        const fin = spinOnce(); render(fin,false); window._last = fin; store.set('last', fin);
+        const fin = spinOnce(); render(fin,false); window._last = fin; localStorage.setItem('last', JSON.stringify(fin));
       }
     }
     tick();
@@ -295,12 +353,14 @@
 
   $('#stopBtn').addEventListener('click', () => {
     if(!spinning) return; spinning=false; clearTimeout(spinTimer); $('#startBtn').disabled=false; $('#stopBtn').disabled=true;
-    const fin = spinOnce(); render(fin,false); window._last = fin; store.set('last', fin);
+    const fin = spinOnce(); render(fin,false); window._last = fin; localStorage.setItem('last', JSON.stringify(fin));
   });
 
   $('#resetBtn').addEventListener('click', () => {
     ['resRole','resChamp','resSums','resRunes','resShards'].forEach(id=>{ const el=$('#'+id); el.textContent='—'; el.classList.remove('spin') });
-    window._last = null; store.set('last', null);
+    $('#champImg').src=''; $('#sum1Img').src=''; $('#sum2Img').src=''; $('#runeKeyImg').src='';
+    $('#minorIcons').innerHTML='';
+    window._last = null; localStorage.removeItem('last');
   });
 
   $('#copyBtn').addEventListener('click', async () => {
@@ -318,38 +378,22 @@
     } else {
       document.body.style.background='transparent';
       document.querySelector('.wrap').style.background='transparent';
-      $('#obsBtn').textContent='Modo Normal';
+      $('#obsBtn').textContent='Modo normal';
     }
   });
 
-  // Guardar/recuperar roles y toggles
-  function saveToggles(){
-    const roles = activeRoles();
-    store.set('roles', roles);
-    store.set('forceSmite', $('#forceSmite').checked);
-    store.set('includeFlash', $('#includeFlash').checked);
-  }
-  function loadToggles(){
-    const r = store.get('roles', ["Top","Jungla","Mid","ADC","Support"]);
-    $$('input[data-role]').forEach(i=>{ i.checked = r.includes(i.value); i.addEventListener('change', saveToggles); });
-    $('#forceSmite').checked = store.get('forceSmite', true);
-    $('#includeFlash').checked = store.get('includeFlash', true);
-    ['forceSmite','includeFlash'].forEach(id=>$('#'+id).addEventListener('change', saveToggles));
-  }
-
-  // Escape de HTML simple
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])) }
+  function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])) }
 
   // === Init ===
   (async function(){
-    loadToggles();
     try{
       await loadData();
-      const last = store.get('last', null); if(last) { window._last = last; render(last,false); }
+      const last = localStorage.getItem('last');
+      if(last){ try{ const obj=JSON.parse(last); window._last=obj; render(obj,false); }catch{} }
     }catch(e){
       console.error(e);
-      $('#verLabel').textContent = 'No se pudo cargar DDragon';
-      alert('No se pudieron cargar campeones/runas de Data Dragon. Reintenta más tarde.');
+      $('#verLabel').textContent = 'No se pudo cargar Data Dragon';
+      alert('No se pudieron cargar campeones/runas/hechizos de Data Dragon. Reintenta más tarde.');
     }
   })();
   </script>
