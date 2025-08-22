@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ruleta LoL – Rol / Campeón / Hechizos / Runas</title>
+  <meta name="description" content="Ruleta aleatoria para League of Legends: elige rol, campeón, hechizos y runas (Data Dragon en vivo, español)."/>
+  <style>
+    :root{
+      /* Tema violeta/rosa con glow */
+      --bg:#0b0715;--bg2:#160f2b;--panel:#1e1538;--panel2:#130d24;--border:#3a2d68;--text:#f4eaff;--muted:#c7b6e6;
+      --pink:#ff4dbd;--violet:#a855f7;--danger:#ef4444;
+      --glow: 0 0 12px #a855f766, 0 0 24px #ff4dbd33;
+      --glow-strong: 0 0 18px #a855f7aa, 0 0 36px #ff4dbd66;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:radial-gradient(1000px 600px at 10% 10%, #1a1036 0%, transparent 60%),
+                          radial-gradient(900px 600px at 90% 0%, #2c1b5f 0%, transparent 60%),
+                          linear-gradient(180deg,var(--bg),var(--bg2));
+         color:var(--text);font:500 16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    .wrap{max-width:1200px;margin:0 auto;padding:20px}
+    h1{font-size:clamp(22px,4vw,36px);margin:0 0 4px;text-shadow:var(--glow-strong)}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px}
+    @media(min-width:1100px){.grid{grid-template-columns:380px 1fr}}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:var(--glow)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    .btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;transition:transform .08s ease, filter .15s ease, box-shadow .15s ease;letter-spacing:.2px}
+    .btn:disabled{opacity:.6;cursor:not-allowed;filter:saturate(.6)}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--pink);color:#1a0f2b;box-shadow:var(--glow)}
+    .btn-primary:hover{filter:brightness(1.06)}
+    .btn-sec{background:var(--violet);color:white;box-shadow:var(--glow)}
+    .btn-sec:hover{filter:brightness(1.06)}
+    .btn-ghost{background:#261d4a;border:1px solid var(--border);color:var(--text)}
+    .btn-danger{background:var(--danger);color:white}
+
+    label.chk{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#1a1236;box-shadow:0 0 0 1px #00000022 inset}
+    label.chk input{accent-color:var(--pink);width:18px;height:18px}
+
+    .title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .title h2{font-size:18px;margin:0}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:#2a1d55;border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:var(--muted)}
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    @media(min-width:700px){.grid2{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    textarea,input[type="text"]{width:100%;background:#1b1438;border:1px solid var(--border);color:var(--text);border-radius:12px;padding:10px;outline:none}
+    textarea:focus,input:focus{box-shadow:0 0 0 2px #ff4dbd55}
+
+    .result{display:grid;gap:14px}
+    .resbox{border:1px solid var(--border);background:linear-gradient(180deg,#221a45,#120d24);border-radius:16px;padding:16px;box-shadow:var(--glow)}
+    .lab{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .big{font-size:clamp(20px,3vw,28px);font-weight:900;letter-spacing:.3px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .spin{animation:updown .5s linear infinite}
+    @keyframes updown{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+    .footer{margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+    .kbd{border:1px solid var(--border);border-bottom-color:#000;background:#0b1220;border-radius:8px;padding:2px 6px}
+    .tiny{font-size:12px;color:var(--muted)}
+
+    /* Íconos */
+    .icons{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .ico{width:42px;height:42px;border-radius:10px;background:#0b1220;border:1px solid var(--border);object-fit:cover;box-shadow:var(--glow)}
+    .ico.rune{border-radius:50%}
+    .name{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+    /* Splash y habilidades */
+    .splash{width:100%;max-width:460px;border-radius:16px;border:1px solid var(--border);box-shadow:var(--glow);display:block}
+    .skills{display:grid;grid-template-columns:repeat(5,auto);gap:10px;align-items:center}
+    .skill{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .skill img{width:48px;height:48px;border-radius:10px;border:1px solid var(--border);box-shadow:var(--glow);background:#0b1220;object-fit:cover}
+    .badge{display:inline-flex;align-items:center;gap:8px;background:#2a1d55;border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:var(--muted);font-weight:700}
+
+    /* Logo superpuesto */
+    #logoOverlay{position:fixed;top:20px;right:20px;width:90px;height:auto;z-index:9999;pointer-events:none;filter:drop-shadow(0 0 10px #ff4dbd66)}
+  </style>
+</head>
+<body>
+  <!-- Logo (subí logo.png a la raíz del repo) -->
+  <img src="logo.png" id="logoOverlay" alt="Logo" />
+
+  <div class="wrap">
+    <header class="title">
+      <div>
+        <h1>🎡 Ruleta LoL</h1>
+        <div class="muted">Rol • Campeón • Hechizos • Runas — datos en vivo (español) de Riot Data Dragon</div>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" id="copyBtn" title="Copiar resultado">Copiar</button>
+        <button class="btn btn-ghost" id="obsBtn" title="Modo OBS (fondo transparente)">Modo OBS</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="title">
+          <h2>Controles</h2>
+          <span class="pill"><span id="verLabel">Cargando versión…</span></span>
+        </div>
+
+        <div class="grid2">
+          <label class="chk"><input type="checkbox" data-role value="Top" checked> Top</label>
+          <label class="chk"><input type="checkbox" data-role value="Jungla" checked> Jungla</label>
+          <label class="chk"><input type="checkbox" data-role value="Medio" checked> Medio</label>
+          <label class="chk"><input type="checkbox" data-role value="Tirador" checked> Tirador</label>
+          <label class="chk"><input type="checkbox" data-role value="Soporte" checked> Soporte</label>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <label class="chk"><input id="forceSmite" type="checkbox" checked> Aplastar obligatorio en Jungla</label>
+          <label class="chk"><input id="includeFlash" type="checkbox" checked> Incluir Destello</label>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn btn-primary" id="startBtn" disabled>INICIAR</button>
+          <button class="btn btn-sec" id="stopBtn" disabled>DETENER</button>
+          <button class="btn btn-ghost" id="resetBtn">Reiniciar</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="title">
+          <h2>Resultado</h2>
+          <span class="tiny">Tip: después de “Copiar”, pegalo en el chat del stream.</span>
+        </div>
+
+        <div class="result">
+          <div class="resbox">
+            <div class="lab">Arte del campeón</div>
+            <img id="splashImg" class="splash" alt="Splash del campeón"/>
+          </div>
+
+          <div class="resbox">
+            <div class="lab">Rol</div>
+            <div class="big" id="resRole">—</div>
+          </div>
+          <div class="resbox">
+            <div class="lab">Campeón</div>
+            <div class="name"><img id="champImg" class="ico" alt=""/> <span class="big" id="resChamp">—</span></div>
+          </div>
+          <div class="resbox">
+            <div class="lab">Hechizos de invocador</div>
+            <div class="name"><img id="sum1Img" class="ico" alt=""/> <img id="sum2Img" class="ico" alt=""/> <span class="big" id="resSums">—</span></div>
+          </div>
+
+          <div class="resbox">
+            <div class="lab">Habilidades</div>
+            <div class="skills">
+              <div class="skill"><img id="skillP" alt="Pasiva"/><div class="tiny">P</div></div>
+              <div class="skill"><img id="skillQ" alt="Q"/><div class="tiny">Q</div></div>
+              <div class="skill"><img id="skillW" alt="W"/><div class="tiny">W</div></div>
+              <div class="skill"><img id="skillE" alt="E"/><div class="tiny">E</div></div>
+              <div class="skill"><img id="skillR" alt="R"/><div class="tiny">R</div></div>
+            </div>
+            <div style="margin-top:10px" class="badge" id="abilityMax">Habilidad a maximizar: —</div>
+          </div>
+
+          <div class="resbox">
+            <div class="lab">Runas</div>
+            <div class="name">
+              <img id="runeKeyImg" class="ico rune" alt=""/>
+              <span id="resRunes" class="big" style="line-height:1.2">—</span>
+            </div>
+            <div class="icons" id="minorIcons"></div>
+            <div class="tiny" id="resShards"> </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">
+      <div>Hecho para streaming. Guarda tus opciones en el navegador automáticamente.</div>
+      <div class="tiny">Fuente de datos: Riot Data Dragon (campeones, runas, hechizos y habilidades) • Compatible con OBS (Browser Source)</div>
+    </div>
+  </div>
+
+  <script>
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  let VERS=null;let CHAMPIONS=[];let RUNEPATHS=[];let SUMMONERS={};
+  const CHAMP_DETAIL_CACHE={};
+  let spinning=false;let spinTimer=null;
+
+  const SHARDS={
+    offense:["Fuerza adaptable","Velocidad de ataque","Aceleración de habilidad"],
+    flex:["Fuerza adaptable","Armadura","Resistencia mágica"],
+    defense:["Vida","Armadura","Resistencia mágica"]
+  };
+  const SUM_KEYS=['SummonerFlash','SummonerDot','SummonerTeleport','SummonerExhaust','SummonerHaste','SummonerHeal','SummonerBarrier','SummonerBoost','SummonerSmite'];
+
+  async function loadData(){
+    async function fetchJSON(url){const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status+" "+url);return r.json();}
+    const versions=await fetchJSON('https://ddragon.leagueoflegends.com/api/versions.json');
+    VERS=versions[0];$('#verLabel').textContent=`v${VERS}`;
+
+    async function getLangJson(path){
+      const es=`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/es_ES/${path}`;
+      try{return await fetchJSON(es);}catch{const en=`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/en_US/${path}`;return await fetchJSON(en);} }
+
+    const champJson=await getLangJson('champion.json');
+    CHAMPIONS=Object.values(champJson.data).map(c=>({id:c.id,name:c.name,image:c.image.full})).sort((a,b)=>a.name.localeCompare(b.name));
+    RUNEPATHS=await getLangJson('runesReforged.json');
+    const sumJson=await getLangJson('summoner.json');
+    SUMMONERS=Object.values(sumJson.data).filter(s=>SUM_KEYS.includes(s.id)).reduce((acc,s)=>{const iconUrl=`https://ddragon.leagueoflegends.com/cdn/${VERS}/img/spell/${s.image.full}`;acc[s.id]={id:s.id,key:s.key,name:s.name,iconUrl};return acc;},{});
+
+    if(CHAMPIONS.length&&RUNEPATHS.length&&Object.keys(SUMMONERS).length){$('#startBtn').disabled=false;}
+  }
+
+  function rollRunes(){
+    const primary=rand(RUNEPATHS);
+    const secondary=rand(RUNEPATHS.filter(p=>p.id!==primary.id));
+    const keystone=rand(primary.slots[0].runes);
+    const minorsPrimary=[1,2,3].map(i=>rand(primary.slots[i].runes));
+    const secSlots=[1,2,3];const pick1=rand(secSlots);let pick2=rand(secSlots.filter(s=>s!==pick1));
+    const minorsSecondary=[rand(secondary.slots[pick1].runes),rand(secondary.slots[pick2].runes)];
+    const shards=[rand(SHARDS.offense),rand(SHARDS.flex),rand(SHARDS.defense)];
+    const iconBase=`https://ddragon.leagueoflegends.com/cdn/img/`;
+    return{primary:{name:primary.name,keystone:{name:keystone.name,icon:iconBase+keystone.icon},minors:minorsPrimary.map(r=>({name:r.name,icon:iconBase+r.icon})),icon:iconBase+primary.icon},secondary:{name:secondary.name,minors:minorsSecondary.map(r=>({name:r.name,icon:iconBase+r.icon})),icon:iconBase+secondary.icon},shards};
+  }
+
+  function rollSummoners(role,opts){
+    const{forceSmite,includeFlash}=opts;const pool=SUM_KEYS.map(k=>SUMMONERS[k]).filter(Boolean);const nameOf=id=>(SUMMONERS[id]?SUMMONERS[id].name:id);const isSupportOrADC=(role==='Soporte'||role==='Tirador');
+    if(role==='Jungla'&&forceSmite){const second=includeFlash?'SummonerFlash':rand(pool.filter(s=>s.id!=='SummonerSmite')).id;return shufflePair('SummonerSmite',second).map(id=>({id,name:nameOf(id)}));}
+    let filtered=pool.filter(s=>s.id!=='SummonerSmite').map(s=>s.id);
+    if(includeFlash){const other=rand(filtered.filter(id=>id!=='SummonerFlash'));if(isSupportOrADC&&other==='SummonerTeleport'){return['SummonerExhaust','SummonerDot'].map(id=>({id,name:nameOf(id)}));}return shufflePair('SummonerFlash',other).map(id=>({id,name:nameOf(id)}));}
+    let a=rand(filtered),b=rand(filtered);let guard=0;while(b===a&&guard++<20)b=rand(filtered);if(isSupportOrADC&&(a==='SummonerTeleport'||b==='SummonerTeleport')){return['SummonerExhaust','SummonerDot'].map(id=>({id,name:nameOf(id)}));}return shufflePair(a,b).map(id=>({id,name:nameOf(id)}));
+  }
+
+  function shufflePair(a,b){return Math.random()<0.5?[a,b]:[b,a];}
+  function activeRoles(){return $$('input[data-role]').filter(i=>i.checked).map(i=>i.value);}
+
+  function spinOnce(){const roles=activeRoles();if(!roles.length)return null;if(!CHAMPIONS.length||!RUNEPATHS.length)return null;const role=rand(roles);const champ=rand(CHAMPIONS);const runes=rollRunes();const sums=rollSummoners(role,{forceSmite:$('#forceSmite').checked,includeFlash:$('#includeFlash').checked});return{role,champ,runes,sums};}
+
+  async function getChampionDetail(id){
+    if(CHAMP_DETAIL_CACHE[id]) return CHAMP_DETAIL_CACHE[id];
+    try{const url=`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/es_ES/champion/${id}.json`;const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json();const data=j.data[id];CHAMP_DETAIL_CACHE[id]=data;return data;}catch{try{const url=`https://ddragon.leagueoflegends.com/cdn/${VERS}/data/en_US/champion/${id}.json`;const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json();const data=j.data[id];CHAMP_DETAIL_CACHE[id]=data;return data;}catch{return null;}}
+  }
+
+  async function render(res,ghost=false){
+    if(!res) return;
+    $('#resRole').textContent=res.role;toggleSpin('#resRole',ghost);
+
+    const champUrl=`https://ddragon.leagueoflegends.com/cdn/${VERS}/img/champion/${res.champ.image}`;
+    $('#champImg').src=champUrl;$('#champImg').alt=res.champ.name;$('#resChamp').textContent=res.champ.name;toggleSpin('#resChamp',ghost);
+
+    if(!ghost){ const splash=`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${res.champ.id}_0.jpg`; $('#splashImg').src=splash; $('#splashImg').alt=`${res.champ.name} splash`; }
+
+    const s1=res.sums[0],s2=res.sums[1];
+    $('#sum1Img').src=SUMMONERS[s1.id].iconUrl;$('#sum1Img').alt=s1.name;$('#sum2Img').src=SUMMONERS[s2.id].iconUrl;$('#sum2Img').alt=s2.name;$('#resSums').textContent=`${s1.name} + ${s2.name}`;toggleSpin('#resSums',ghost);
+
+    $('#runeKeyImg').src=res.runes.primary.keystone.icon;$('#runeKeyImg').alt=res.runes.primary.keystone.name;
+    $('#resRunes').innerHTML=`<div class="mono">Primaria: <b>${esc(res.runes.primary.name)}</b> — Keystone: <b>${esc(res.runes.primary.keystone.name)}</b><br>Menores: ${res.runes.primary.minors.map(r=>esc(r.name)).join(' • ')}<br>Secundaria: <b>${esc(res.runes.secondary.name)}</b> — ${res.runes.secondary.minors.map(r=>esc(r.name)).join(' • ')}</div>`;toggleSpin('#resRunes',ghost);
+    const minorsBox=$('#minorIcons'); minorsBox.innerHTML=''; res.runes.primary.minors.forEach(r=>{const img=new Image();img.className='ico rune';img.src=r.icon;img.alt=r.name;minorsBox.appendChild(img);}); res.runes.secondary.minors.forEach(r=>{const img=new Image();img.className='ico rune';img.src=r.icon;img.alt=r.name;minorsBox.appendChild(img);}); $('#resShards').textContent=`Fragmentos: ${res.runes.shards.join(' • ')}`;
+
+    if(!ghost){ const det=await getChampionDetail(res.champ.id); if(det){ const base=`https://ddragon.leagueoflegends.com/cdn/${VERS}/img/`; $('#skillP').src=base+'passive/'+det.passive.image.full; $('#skillQ').src=base+'spell/'+det.spells[0].image.full; $('#skillW').src=base+'spell/'+det.spells[1].image.full; $('#skillE').src=base+'spell/'+det.spells[2].image.full; $('#skillR').src=base+'spell/'+det.spells[3].image.full; $('#abilityMax').textContent='Habilidad a maximizar: '+rand(['Q','W','E']); } }
+  }
+
+  function toggleSpin(sel,on){const el=$(sel); if(on) el.classList.add('spin'); else el.classList.remove('spin');}
+  function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
+
+  // Eventos UI
+  $('#startBtn').addEventListener('click',()=>{
+    if(spinning) return; if(!CHAMPIONS.length||!RUNEPATHS.length){alert('Todavía se están cargando los datos. Probá de nuevo en un momento.');return;}
+    spinning=true; $('#startBtn').disabled=true; $('#stopBtn').disabled=false; const startT=performance.now();
+    function tick(){ const g=spinOnce(); if(g) render(g,true); if(!spinning) return; if(performance.now()-startT<1600){ spinTimer=setTimeout(tick,80);} else { spinning=false; $('#startBtn').disabled=false; $('#stopBtn').disabled=true; const fin=spinOnce(); if(fin){ render(fin,false); window._last=fin; localStorage.setItem('last',JSON.stringify(fin)); } } }
+    tick();
+  });
+
+  $('#stopBtn').addEventListener('click',()=>{ if(!spinning) return; spinning=false; clearTimeout(spinTimer); $('#startBtn').disabled=false; $('#stopBtn').disabled=true; const fin=spinOnce(); if(fin){ render(fin,false); window._last=fin; localStorage.setItem('last',JSON.stringify(fin)); } });
+
+  $('#resetBtn').addEventListener('click',()=>{ ['resRole','resChamp','resSums','resRunes','resShards'].forEach(id=>{const el=$('#'+id); el.textContent='—'; el.classList.remove('spin')}); $('#champImg').src=''; $('#sum1Img').src=''; $('#sum2Img').src=''; $('#runeKeyImg').src=''; $('#minorIcons').innerHTML=''; $('#splashImg').src=''; ['skillP','skillQ','skillW','skillE','skillR'].forEach(id=>$('#'+id).src=''); window._last=null; localStorage.removeItem('last'); });
+
+  $('#copyBtn').addEventListener('click',async()=>{ const res=window._last||spinOnce(); if(!res) return; const text=['🎡 Ruleta LoL',`Rol: ${res.role}`,`Campeón: ${res.champ.name}`,`Hechizos: ${res.sums.map(s=>s.name).join(' + ')}`,`Runas: [Primaria ${res.runes.primary.name}] Keystone ${res.runes.primary.keystone.name} | Menores: ${res.runes.primary.minors.map(r=>r.name).join(' / ')}`,`       [Secundaria ${res.runes.secondary.name}] ${res.runes.secondary.minors.map(r=>r.name).join(' / ')}`,`Fragmentos: ${res.runes.shards.join(' / ')}`].join('
+'); try{ await navigator.clipboard.writeText(text); alert('Resultado copiado ✨'); }catch(e){ console.warn(e); } });
+
+  $('#obsBtn').addEventListener('click',()=>{ if(document.body.style.background==='transparent'){ document.body.style.background=''; document.querySelector('.wrap').style.background=''; $('#obsBtn').textContent='Modo OBS'; } else { document.body.style.background='transparent'; document.querySelector('.wrap').style.background='transparent'; $('#obsBtn').textContent='Modo normal'; } });
+
+  ;['champImg','sum1Img','sum2Img','runeKeyImg','splashImg','skillP','skillQ','skillW','skillE','skillR'].forEach(id=>{ const el=document.getElementById(id); el.onerror=()=>{el.style.visibility='hidden';}; el.onload=()=>{el.style.visibility='visible';}; });
+
+  (async function(){ try{ await loadData(); const last=localStorage.getItem('last'); if(last){ try{ const obj=JSON.parse(last); if(obj) { window._last=obj; render(obj,false); } }catch{} } }catch(e){ console.error(e); document.getElementById('verLabel').textContent='Error cargando Data Dragon'; alert('No se pudieron cargar campeones/runas/hechizos. Reintenta más tarde.'); } })();
+  </script>
+</body>
+</html>
